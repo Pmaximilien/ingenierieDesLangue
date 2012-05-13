@@ -60,27 +60,27 @@ public class ParseAllPronomWorker{
 			   insertion_count = 0,
 			   parse_ind = 0;
 
-		String mot;
+		String debut = "<phrase>";
+		String fin = "</phrase>";
 
-		int i;
+		int sentence_size;
 		int mine = 0;
 		for (int txt_ind = 0; txt_ind < docLen; txt_ind++) {
-		    // update the progress
-		    //setProgress( (txt_ind+1) * 100 / docLen);
-
-		    mot = Get_Mot(doc, txt_ind);
-		    txt_ind += mot.length();
-
-		    if(isPronom(mot)){
-			String next = Get_Mot(doc, txt_ind + 1);
-
-    			if(is_next_Pronom(next)){
-				txt_ind += next.length();
-				next = Get_Mot(doc, txt_ind + 1);
-				}
-			System.out.println(next);
-		    }
+			doc.insertString(txt_ind, debut, null);
+			txt_ind += 8;
+			sentence_size = 0;	
+			while(! isDelimiteur( doc.getText(txt_ind + sentence_size, 1))){
+				sentence_size++;
+			}
+			txt_ind += sentence_size;
+			doc.insertString(txt_ind, fin, null);
+			txt_ind += 9;
 		}
+
+			
+
+			// Parcours jusqu'à la fin de la phrase
+
 
 		//parse_ind += sep.length() + 1;
 		insertion_count++;
@@ -138,22 +138,11 @@ public class ParseAllPronomWorker{
 	return ret.toString();
     }
 
-    private boolean isPronom(String mot){
+    private boolean isDelimiteur(String mot){
+	String [] pronoms = {".", "!", "?"};
 	int i;
-	String [] pronoms = {"je", "tu", "il", "elle", "nous", "vous", "ils", "elles"};
 
-	for(i = 0; i < 8; i++){
-	    if(mot.equalsIgnoreCase(pronoms[i]))
-		return true;
-	}
-	return false;
-    }
-
-    private boolean is_next_Pronom(String mot){
-	int i;
-	String [] pronoms = {"me", "te", "t", "le", "la", "nous", "vous", "eux", "les"};
-
-	for(i = 0; i < 9; i++){
+	for(i = 0; i < 3; i++){
 	    if(mot.equalsIgnoreCase(pronoms[i]))
 		return true;
 	}
