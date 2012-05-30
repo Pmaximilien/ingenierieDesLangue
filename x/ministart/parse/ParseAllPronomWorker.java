@@ -34,8 +34,8 @@ public class ParseAllPronomWorker{
     	String verbe = "<gv>";
     	String fin_verbe = "</gv>";
 	String next = Get_Mot(doc, ind);
-	System.out.println("Premier mot : "+next);
-	System.out.println("Deuxieme mot : "+ Get_Mot(doc, ind + next.length()));
+	//System.out.println("Premier mot : "+next);
+	//System.out.println("Deuxieme mot : "+ Get_Mot(doc, ind + next.length()));
 	ind += next.length();
 
 	// Je | mange un fruit
@@ -97,32 +97,37 @@ public class ParseAllPronomWorker{
 			   insertion_count = 0,
 			   parse_ind = 0;
 
-		String debut = "<phrase>";
-		String fin = "</phrase>";
-		String verbe = "</gv>";
+		String verbe = "<gv>";
+		String f_verbe = "</gv>";
 
 		int sentence_size;
 		int mine = 0;
 		int gv;
+		int i;
 
 
 		for (int txt_ind = 0; txt_ind < docLen; txt_ind++) {
-			doc.insertString(txt_ind, debut, null);
-			txt_ind += 8;
+			//doc.insertString(txt_ind, debut, null);
+			//txt_ind += 8;
 			sentence_size = 0;	
 			while(! isDelimiteur( doc.getText(txt_ind + sentence_size, 1))){
 				sentence_size++;
 			}
-
+			i = txt_ind;
     			gv = skip_sujet(doc, txt_ind);
 			if (gv != 0){
 				doc.insertString(gv, verbe, null);
-				txt_ind += verbe.length();
+				System.out.println(gv);
+				gv += verbe.length();
+				System.out.println(gv);
+				System.out.println("skyp");
+				doc.insertString(gv + Get_Mot(doc, gv).length(), f_verbe, null);
+
 			}
 	
 			txt_ind += sentence_size;
-			doc.insertString(txt_ind, fin, null);
-			txt_ind += 9;
+			//doc.insertString(txt_ind, fin, null);
+			//txt_ind += 9;
 		}
 
 			
