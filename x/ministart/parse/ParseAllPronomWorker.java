@@ -28,37 +28,77 @@ public class ParseAllPronomWorker{
 
 
 
-    private int skip_sujet(Document doc, int ind){
 
+   protected int skip_sujet(Document doc, int ind, int fin) throws Exception {
 
     	String verbe = "<gv>";
     	String fin_verbe = "</gv>";
-	String next = Get_Mot(doc, ind);
-	//System.out.println("Premier mot : "+next);
-	//System.out.println("Deuxieme mot : "+ Get_Mot(doc, ind + next.length()));
-	ind += next.length();
+	String mot;
+	boolean found = false;
+	int tmp;
+	int i;
 
-	// Je | mange un fruit
-	if (isPronom(next)){
-		next = Get_Mot(doc, ind);
+	for(i = ind; i < fin; i++){
+		mot = Get_Mot(doc, ind);	
 
-		// Je | me fait des patte
-		if (isSecondPronom(next))
-			ind += next.length();
-			// Je me | fait des patte
-	} else {
+
+		if (isPronom(mot)){
+			i += mot.length();
+
+			mot = Get_Mot(doc, i);
+			// Je | me fait des patte
+			if (isSecondPronom(mot))
+				i += mot.length();
+				// Je me | fait des patte
+				doc.insertString(i, verbe, null);
+
+				i += verbe.length();
+				// Je me <gv> | fait des patte
+
+				mot = Get_Mot(doc, i);
+				i += mot.length();
+				// Je me <gv> fait | des pattes
+
+				found =  true;
+		}
+
+		if (isComp(mot)){
+			// Le garde bu | de l'eau
+			 if (found){
+				// Le garde bu de l'eau | de la rivière
+			 	doc.insertString(i, fin_verbe, null);
+				return verbe.length() + fin_verbe.length();
+			}
+			else {
+				// Le garde bu | de l'eau
+				tmp = i - 1;			
+				while(doc.getText(tmp, 1)  != " " && tmp > ind){
+					tmp--;
+
+
+				if (tmp == ind){
+					return 0;
+
+
+
+				}else{
+					doc.insertString(tmp, verbe, null);
+					i += verbe.length();
+					found = true;
+				}
+			}
+		}
+		}
+
+	}
+	if (found){
+		doc.insertString(fin, fin_verbe, null);
+		return verbe.length() + fin_verbe.length();
+	}else{
 		return 0;
 	}
-
-
-
-
-	return ind;
-
-
-
-
-	}
+					
+}
 
     public ParseAllPronomWorker(final SwingUI ui) {
 	this.ui = ui;
@@ -103,7 +143,6 @@ public class ParseAllPronomWorker{
 		int sentence_size;
 		int mine = 0;
 		int gv;
-		int i;
 
 
 		for (int txt_ind = 0; txt_ind < docLen; txt_ind++) {
@@ -113,20 +152,10 @@ public class ParseAllPronomWorker{
 			while(! isDelimiteur( doc.getText(txt_ind + sentence_size, 1))){
 				sentence_size++;
 			}
-			i = txt_ind;
-    			gv = skip_sujet(doc, txt_ind);
-			if (gv != 0){
-				doc.insertString(gv, verbe, null);
-				System.out.println(gv);
-				gv += verbe.length();
-				System.out.println(gv);
-				System.out.println("skyp");
-				doc.insertString(gv + Get_Mot(doc, gv).length(), f_verbe, null);
+    			gv = skip_sujet(doc, txt_ind, txt_ind + sentence_size);
 
-			}
-	
-			txt_ind += sentence_size;
-			//doc.insertString(txt_ind, fin, null);
+			txt_ind += sentence_size + gv;
+			//doc.insertString(txt_ind, verbe, null);
 			//txt_ind += 9;
 		}
 
@@ -237,6 +266,17 @@ public class ParseAllPronomWorker{
 	String [] stop = {".", "!", "?", ","};
 	int i;
 	mot = mot.trim();
+
+	for(i = 0; i < stop.length; i++){
+	    if(mot.equalsIgnoreCase(stop[i]))
+		return true;
+	}
+	return false;
+    }
+
+    private boolean isComp(String mot){
+    	int i;
+    	String [] stop = {"que", "qui", "à", "au", "aux", "en"};
 
 	for(i = 0; i < stop.length; i++){
 	    if(mot.equalsIgnoreCase(stop[i]))
